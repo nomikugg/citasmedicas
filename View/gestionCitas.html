@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+  <link rel="stylesheet" href="css/estilo.css" />
+  <head>
+    <title>Programar Cita Médica</title>
+  </head>
+  <body>
+    <h1>Programar Cita Médica</h1>
+
+    <form id="citaForm">
+      <label for="nombre">Nombre del paciente:</label>
+      <input type="text" id="nombre" required />
+
+      <label for="fecha">Fecha de la cita:</label>
+      <input type="date" id="fecha" required />
+
+      <label for="medico">Médico:</label>
+      <select id="medico">
+        <option value="Dr. López">Dr. López</option>
+        <option value="Dra. Smith">Dra. Smith</option>
+        <option value="Dr. Pérez">Dr. Pérez</option>
+        <option value="Dra. García">Dra. García</option>
+      </select>
+
+      <h2>Calendario de Horarios</h2>
+      <table id="horarios">
+        <tr>
+          <th>Hora</th>
+          <th>Lunes</th>
+          <th>Martes</th>
+          <th>Miércoles</th>
+          <th>Jueves</th>
+          <th>Viernes</th>
+        </tr>
+      </table>
+
+      <button type="button" id="agregarCita">Agendar Cita</button>
+    </form>
+
+    <h2>Citas Agendadas</h2>
+    <ul id="citasList"></ul>
+
+    <button type="button" id="mostrarCitas">Mostrar Citas</button>
+    <div id="citasPorDia"></div>
+
+    <script>
+      var citas = [];
+
+      function agregarCita() {
+        var nombre = document.getElementById("nombre").value;
+        var fecha = document.getElementById("fecha").value;
+        var medico = document.getElementById("medico").value;
+        var horaSeleccionada = document.querySelector(
+          'input[name="hora"]:checked'
+        );
+
+        if (!horaSeleccionada) {
+          alert("Por favor, selecciona un horario disponible.");
+          return;
+        }
+
+        var hora = horaSeleccionada.value;
+        var diaSeleccionado = horaSeleccionada.dataset.dia;
+
+        var cita = {
+          nombre: nombre,
+          fecha: fecha,
+          medico: medico,
+          hora: hora,
+          dia: diaSeleccionado,
+        };
+
+        citas.push(cita);
+
+        var citasList = document.getElementById("citasList");
+        var listItem = document.createElement("li");
+        listItem.textContent =
+          cita.nombre +
+          " - " +
+          cita.fecha +
+          " - " +
+          cita.dia +
+          " - " +
+          cita.hora +
+          " - " +
+          cita.medico;
+        citasList.appendChild(listItem);
+
+        horaSeleccionada.disabled = true;
+        horaSeleccionada.classList.remove("available");
+        horaSeleccionada.classList.add("unavailable");
+        horaSeleccionada.classList.remove("selected");
+      }
+
+      function mostrarCitasPorDia() {
+        var fechaSeleccionada = document.getElementById("fecha").value;
+        var citasPorDia = document.getElementById("citasPorDia");
+        citasPorDia.innerHTML =
+          "<h2>Citas Programadas para el " + fechaSeleccionada + "</h2>";
+
+        var citasParaMostrar = citas.filter(function (cita) {
+          return cita.fecha === fechaSeleccionada;
+        });
+
+        if (citasParaMostrar.length > 0) {
+          var listaCitas = document.createElement("ul");
+
+          citasParaMostrar.forEach(function (cita) {
+            var listItem = document.createElement("li");
+            listItem.textContent =
+              cita.nombre +
+              " - " +
+              cita.dia +
+              " - " +
+              cita.hora +
+              " - " +
+              cita.medico;
+            listaCitas.appendChild(listItem);
+          });
+
+          citasPorDia.appendChild(listaCitas);
+        } else {
+          citasPorDia.innerHTML +=
+            "<p>No hay citas programadas para esta fecha.</p>";
+        }
+      }
+
+      function seleccionarHorario() {
+        var horariosSeleccionados = document.querySelectorAll(
+          'input[name="hora"]:checked'
+        );
+
+        horariosSeleccionados.forEach(function (horaSeleccionada) {
+          horaSeleccionada.classList.remove("available");
+          horaSeleccionada.classList.add("selected");
+          horaSeleccionada.disabled = true;
+        });
+      }
+
+      document
+        .getElementById("agregarCita")
+        .addEventListener("click", function () {
+          agregarCita();
+          seleccionarHorario();
+        });
+
+      document
+        .getElementById("mostrarCitas")
+        .addEventListener("click", mostrarCitasPorDia);
+
+      var horariosTable = document.getElementById("horarios");
+      var diasSemana = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"];
+
+      for (var hora = 9; hora <= 17; hora++) {
+        var row = horariosTable.insertRow();
+        var horaCell = row.insertCell(0);
+        horaCell.innerHTML = hora + ":00";
+
+        for (var dia = 0; dia < 5; dia++) {
+          var disponibilidadCell = row.insertCell(dia + 1);
+          var radioInput = document.createElement("input");
+          radioInput.type = "radio";
+          radioInput.name = "hora";
+          radioInput.value = hora + ":00";
+          radioInput.dataset.dia = diasSemana[dia];
+          radioInput.classList.add("available");
+          disponibilidadCell.appendChild(radioInput);
+        }
+      }
+    </script>
+  </body>
+</html>
